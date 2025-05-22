@@ -4,21 +4,30 @@ import logging
 from dotenv import load_dotenv
 import os
 
+# Load the token from .env file
 load_dotenv()
 token = os.environ.get('DISCORD_TOKEN')
 
+# Logging configuration
 handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
+logging.basicConfig(level=logging.DEBUG, handlers=[handler])
+
+# Intents
 intents = discord.Intents.all()
 
-bot = commands.Bot(command_prefix='!', intents=intents)
+# Bot class with setup_hook
+class MyBot(commands.Bot):
+    async def setup_hook(self):
+        await self.load_extension('cogs.commands')
+        print("[+] Commands successfully loaded.")
 
-@bot.command()
-async def greet(ctx):
-    await ctx.send("POOOOOOORRAAN!")
+# Bot instance
+bot = MyBot(command_prefix='!', intents=intents)
 
-@bot.command()
-async def hello(ctx):
-    await ctx.send(f"Opa {ctx.author.mention}!")
+# Prints a message when bot is on
+@bot.event
+async def on_ready():
+    print(f'🤖 Bot is online as {bot.user}')
 
-
+# Run the bot
 bot.run(token, log_handler=handler, log_level=logging.DEBUG)

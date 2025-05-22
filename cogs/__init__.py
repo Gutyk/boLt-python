@@ -1,0 +1,1 @@
+# Este arquivo torna a pasta 'cogs' um pacote Python válido.
