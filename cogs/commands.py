@@ -40,32 +40,35 @@ class Commands(commands.Cog):
     @commands.command()
     async def remove(self, ctx):
         role = discord.utils.get(ctx.author.roles, name=self.tester_role)
- 
-        if role:
-            await ctx.author.remove_roles(role)
-            await ctx.send(f"{role.name.capitalize()} removido de {ctx.author.mention}!")
+        if role is not None:
+                await ctx.author.remove_roles(role)
+                await ctx.send(f"{role.name.capitalize()} removido de {ctx.author.mention}!")
         else:
-            await ctx.send(f"{ctx.author.mention}, você não possui o cargo {self.test_role}.")
-
-    # Clear
+            await ctx.send(f"{ctx.author.mention}, você não possui o cargo {self.tester_role}.")
+            
+    # Clear messages
     @commands.command()
     @commands.has_permissions(administrator=True)
-    async def clear(self, ctx, amount: int = 2):
+    async def clear(self, ctx, amount: int = 1):
+        if amount < 1:
+            await ctx.send("Por favor, insira um número maior que zero.")
+            return
+        
         try:
+            await ctx.message.delete()  # Deleta o comando enviado
             if amount > 15:
-                await ctx.send("Você só pode apagar até 15 mensagens por vez (incluindo o comando).")
+                await ctx.send("Você só pode apagar até 15 mensagens por vez.")
                 return
 
-            await ctx.channel.purge(limit=amount)
-            confirmation = await ctx.send(f"Apaguei {amount} mensagens.")
-            await confirmation(delay=2)
+            deleted = await ctx.channel.purge(limit=amount)
+            confirmation = await ctx.send(f"Apaguei {len(deleted)} mensagens.")
+            await confirmation.delete(delay=3)
 
-        except commands.BadArgument:
-            await ctx.send("Por favor, insira um número válido.")
         except commands.MissingPermissions:
             await ctx.send(f"{ctx.author.mention}, você não tem permissão para usar esse comando.")
-      
-
+        except Exception as e:
+            await ctx.send("Ocorreu um erro ao tentar apagar as mensagens.")
+            raise e
 
     # Spam messages for testing
     @commands.command()
