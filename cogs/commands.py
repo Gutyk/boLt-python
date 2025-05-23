@@ -7,7 +7,7 @@ import aiohttp
 class Commands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.test_role = "teste"
+        self.tester_role = "tester"
         load_dotenv()
         self.weather_key = os.environ.get('WEATHER_KEY')
 
@@ -25,7 +25,7 @@ class Commands(commands.Cog):
     # Assign role to user
     @commands.command()
     async def assign(self, ctx):
-        role = discord.utils.get(ctx.guild.roles, name=self.test_role)
+        role = discord.utils.get(ctx.guild.roles, name=self.tester_role)
         if not role:
             await ctx.send(f"Cargo '{self.test_role}' não encontrado.")
             
@@ -36,6 +36,44 @@ class Commands(commands.Cog):
             await ctx.author.add_roles(role)
             await ctx.send(f"{ctx.author.mention} recebeu o cargo {role.name}!")
 
+    # Remove role from user
+    @commands.command()
+    async def remove(self, ctx):
+        role = discord.utils.get(ctx.author.roles, name=self.tester_role)
+ 
+        if role:
+            await ctx.author.remove_roles(role)
+            await ctx.send(f"{role.name.capitalize()} removido de {ctx.author.mention}!")
+        else:
+            await ctx.send(f"{ctx.author.mention}, você não possui o cargo {self.test_role}.")
+
+    # Clear
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def clear(self, ctx, amount: int = 2):
+        try:
+            if amount > 15:
+                await ctx.send("Você só pode apagar até 15 mensagens por vez (incluindo o comando).")
+                return
+
+            await ctx.channel.purge(limit=amount)
+            confirmation = await ctx.send(f"Apaguei {amount} mensagens.")
+            await confirmation(delay=2)
+
+        except commands.BadArgument:
+            await ctx.send("Por favor, insira um número válido.")
+        except commands.MissingPermissions:
+            await ctx.send(f"{ctx.author.mention}, você não tem permissão para usar esse comando.")
+      
+
+
+    # Spam messages for testing
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def spam(self, ctx, *, message="Spam!"):
+        for _ in range(10):
+            await ctx.send(message)
+
     # See the weather 
     @commands.command()
     async def weather(self, ctx, *, city: str):
@@ -44,7 +82,7 @@ class Commands(commands.Cog):
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
                 if response.status != 200:
-                    await ctx.send("❌ Cidade não encontrada ou erro na API.")
+                    await ctx.send("Cidade não encontrada ou erro na API.")
                     return
 
                 dados = await response.json()
