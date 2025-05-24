@@ -11,6 +11,16 @@ class Commands(commands.Cog):
         load_dotenv()
         self.weather_key = os.environ.get('WEATHER_KEY')
 
+    # Error handler
+    @commands.Cog.listener()
+    async def on_command_error(self, ctx, error):
+        if isinstance(error, commands.MissingPermissions):
+            await ctx.send(f"{ctx.author.mention}, você não tem permissão para usar esse comando.")
+        elif isinstance(error, commands.BadArgument):
+            await ctx.send("Por favor, insira um número válido.")
+        else:
+            await ctx.send("Ocorreu um erro ao executar o comando.")
+            raise error
 
     # Command to verify if the bot is running
     @commands.command()
@@ -53,22 +63,13 @@ class Commands(commands.Cog):
         if amount < 1:
             await ctx.send("Por favor, insira um número maior que zero.")
             return
-        
-        try:
-            await ctx.message.delete()  # Deleta o comando enviado
-            if amount > 15:
-                await ctx.send("Você só pode apagar até 15 mensagens por vez.")
-                return
-
-            deleted = await ctx.channel.purge(limit=amount)
-            confirmation = await ctx.send(f"Apaguei {len(deleted)} mensagens.")
-            await confirmation.delete(delay=3)
-
-        except commands.MissingPermissions:
-            await ctx.send(f"{ctx.author.mention}, você não tem permissão para usar esse comando.")
-        except Exception as e:
-            await ctx.send("Ocorreu um erro ao tentar apagar as mensagens.")
-            raise e
+        if amount > 15:
+            await ctx.send("Você só pode apagar até 15 mensagens por vez.")
+            return
+        await ctx.message.delete()
+        deleted = await ctx.channel.purge(limit=amount)
+        confirmation = await ctx.send(f"Apaguei {len(deleted)} mensagens.")
+        await confirmation.delete(delay=3)
 
     # Spam messages for testing
     @commands.command()
@@ -76,7 +77,7 @@ class Commands(commands.Cog):
     async def spam(self, ctx, *, message="Spam!"):
         for _ in range(10):
             await ctx.send(message)
-
+    
     # See the weather 
     @commands.command()
     async def weather(self, ctx, *, city: str):
