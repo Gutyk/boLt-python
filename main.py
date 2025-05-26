@@ -29,7 +29,7 @@ class MyBot(commands.Bot):
 # Bot instance
 bot = MyBot(command_prefix='!', intents=intents)
 
-# Prints a message when bot is on
+# Evento principal
 @bot.event
 async def on_ready():
     print(f'🤖 Bot is online as {bot.user}')
