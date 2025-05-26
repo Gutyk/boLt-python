@@ -19,6 +19,10 @@ intents = discord.Intents.all()
 class MyBot(commands.Bot):
     async def setup_hook(self):
         await self.load_extension('cogs.commands')
+        await self.load_extension('cogs.tasks')
+        #await self.load_extension('cogs.scheduler')
+        
+        print("[+] All specified cogs successfully loaded.")
         await self.load_extension('cogs.levelsys')
         print("[+] Cogs successfully loaded.")
 
