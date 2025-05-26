@@ -16,13 +16,14 @@ logging.basicConfig(level=logging.DEBUG, handlers=[handler])
 intents = discord.Intents.all()
 
 # Bot class with setup_hook
-class myBot(commands.Bot):
+class MyBot(commands.Bot):
     async def setup_hook(self):
         await self.load_extension('cogs.commands')
-        print("[+] Commands successfully loaded.")
+        await self.load_extension('cogs.levelsys')
+        print("[+] Cogs successfully loaded.")
 
 # Bot instance
-bot = myBot(command_prefix='!', intents=intents)
+bot = MyBot(command_prefix='!', intents=intents)
 
 # Prints a message when bot is on
 @bot.event

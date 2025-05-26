@@ -1,14 +1,16 @@
 from discord.ext import commands
 import discord
+from discord.ui import View, Button
 from dotenv import load_dotenv
 import os
 import aiohttp
+
+load_dotenv()
 
 class Commands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.tester_role = "tester"
-        load_dotenv()
         self.weather_key = os.environ.get('WEATHER_KEY')
 
     # Error handler
@@ -19,7 +21,9 @@ class Commands(commands.Cog):
         elif isinstance(error, commands.BadArgument):
             await ctx.send("Por favor, insira um número válido.")
         else:
-            await ctx.send("Ocorreu um erro ao executar o comando.")
+            clear = await ctx.send("Ocorreu um erro ao executar o comando.")
+            await ctx.message.delete()
+            await clear.delete(delay=3)
             raise error
 
     # Command to verify if the bot is running
@@ -78,6 +82,23 @@ class Commands(commands.Cog):
         for _ in range(10):
             await ctx.send(message)
     
+    # Displays the avatar of the mentioned user or the command author    
+    @commands.command()
+    async def avatar(self, ctx, *, member: discord.Member = None):
+        member = member or ctx.author
+        avatar_url = member.avatar.url
+
+        embed = discord.Embed(
+            title=f"Foto de {member.name}",
+            color=discord.Color.purple()
+        )
+        embed.set_image(url=avatar_url)
+
+        view = View()
+        view.add_item(Button(label="Open Avatar", url=avatar_url))
+
+        await ctx.send(embed=embed, view=view)
+
     # See the weather 
     @commands.command()
     async def weather(self, ctx, *, city: str):
@@ -103,7 +124,7 @@ class Commands(commands.Cog):
                     color = discord.Color.orange()
                 elif 20 < temp <= 24:
                     color = discord.Color.yellow()
-                elif 10 < temp <= 20:
+                elif 15 < temp <= 20:
                     color = discord.Color.dark_blue()
                 else:
                     color = discord.Color.blue
