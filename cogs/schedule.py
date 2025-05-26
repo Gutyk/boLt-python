@@ -22,7 +22,7 @@ class Scheduler(commands.Cog):
         
     @tasks.loop(hours=24)
     async def daily_tasks(self):
-        channel_id = SEU_CHANNEL_ID_AQUI  
+        channel_id = self.channel_id   
         channel = self.bot.get_channel(channel_id)
         
         embed = discord.Embed(
@@ -47,7 +47,7 @@ class Scheduler(commands.Cog):
         
     @tasks.loop(hours=24)
     async def daily_checkin(self):
-        channel_id = SEU_CHANNEL_ID_AQUI  
+        channel_id = self.channel_id  
         channel = self.bot.get_channel(channel_id)
         
         embed = discord.Embed(
