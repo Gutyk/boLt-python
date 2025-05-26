@@ -55,7 +55,16 @@ class Commands(commands.Cog):
                 await ctx.send(f"{role.name.capitalize()} removido de {ctx.author.mention}!")
         else:
             await ctx.send(f"{ctx.author.mention}, você não possui o cargo {self.tester_role}.")
-            
+    
+    @commands.command()
+    async def bolt(self, ctx):
+        embed = discord.Embed(
+            title="World Record",
+            url="https://pbs.twimg.com/media/CoibgcJW8AAN-VA?format=jpg&name=4096x4096",
+            description="Look at the time 9.58 SMASHING THE WORLD RECORD!",
+            color=discord.Color.blue()
+        )
+    
     # Clear messages
     @commands.command()
     @commands.has_permissions(administrator=True)
