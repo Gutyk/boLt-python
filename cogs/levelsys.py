@@ -15,28 +15,37 @@ class LevelSystem(commands.Cog):
             return
 
         stats = leveldb.get_user_document(message.author.id, message.guild.id)
-
         xp = stats["xp"] + 5
         leveldb.update_user(message.author.id, message.guild.id, {"xp": xp})
 
+        # Cálculo de level atual
         lvl = 0
         while True:
             if xp < ((50 * (lvl ** 2)) + (50 * (lvl - 1))):
                 break
             lvl += 1
 
-        xp_needed = (50 * (lvl ** 2)) + (50 * (lvl - 1))
-        xp_to_next_level = xp - xp_needed
+        previous_level = stats.get("level", 0)
 
-        if xp_to_next_level == 0:
-            await message.channel.send(f"Parabéns {message.author.mention}! Você subiu para o level: {lvl}!")
+        if lvl > previous_level:
+            # Atualiza o novo level no banco
+            leveldb.update_user(message.author.id, message.guild.id, {"level": lvl})
 
+            # Envia notificação de level up
+            await message.channel.send(
+                f"{message.author.mention}, você subiu para o nível **{lvl}**! Parabéns!"
+            )
+
+            # Recebe o cargo correspondente ao novo level(de 5 em 5)
             for i in range(len(level)):
                 if lvl == levelnum[i]:
                     role = discord.utils.get(message.guild.roles, name=level[i])
                     if role:
                         await message.author.add_roles(role)
-                        embed = discord.Embed(description=f"{message.author.mention} você recebeu o cargo {level[i]}!")
+                        embed = discord.Embed(
+                            description=f"{message.author.mention} você recebeu o cargo **{level[i]}**!",
+                            color=discord.Color.green()
+                        )
                         embed.set_thumbnail(url=message.author.avatar.url)
                         await message.channel.send(embed=embed)
 
@@ -78,7 +87,6 @@ class LevelSystem(commands.Cog):
         embed.add_field(name="Progresso", value=progress_bar, inline=False)
 
         await ctx.channel.send(embed=embed)
-
 
     @commands.command()
     async def leaderboard(self, ctx):

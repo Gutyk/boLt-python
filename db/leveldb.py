@@ -15,8 +15,7 @@ def get_user_document(user_id, guild_id):
             "user_id": str(user_id),
             "guild_id": str(guild_id),
             "xp": 0,
-            "coins": 0,
-            "last_daily": None,
+            "level": 0
         }
         collection.insert_one(doc)
     return doc

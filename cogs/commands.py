@@ -26,11 +26,6 @@ class Commands(commands.Cog):
             await clear.delete(delay=3)
             raise error
 
-    # Command to verify if the bot is running
-    @commands.command()
-    async def hello(self, ctx):
-        await ctx.send(f"Opa {ctx.author.mention}!")
-
     # Check bot's latency
     @commands.command()
     async def ping(self, ctx):
@@ -111,43 +106,46 @@ class Commands(commands.Cog):
     # See the weather 
     @commands.command()
     async def weather(self, ctx, *, city: str):
-        url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={self.weather_key}&lang=pt_br&units=metric"
+        try:
+            url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={self.weather_key}&lang=pt_br&units=metric"
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as response:
+                    if response.status != 200:
+                        await ctx.send("🌧️ Cidade não encontrada ou erro na API.")
+                        return
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as response:
-                if response.status != 200:
-                    await ctx.send("Cidade não encontrada ou erro na API.")
-                    return
+                    dados = await response.json()
 
-                dados = await response.json()
+                    nome = dados["name"]
+                    clima = dados["weather"][0]["description"].capitalize()
+                    temp = dados["main"]["temp"]
+                    sensacao = dados["main"]["feels_like"]
+                    umidade = dados["main"]["humidity"]
 
-                nome = dados["name"]
-                clima = dados["weather"][0]["description"].capitalize()
-                temp = dados["main"]["temp"]
-                sensacao = dados["main"]["feels_like"]
-                umidade = dados["main"]["humidity"]
+                    if temp > 28:
+                        color = discord.Color.red()
+                    elif temp > 24:
+                        color = discord.Color.orange()
+                    elif temp > 20:
+                        color = discord.Color.yellow()
+                    elif temp > 15:
+                        color = discord.Color.dark_blue()
+                    else:
+                        color = discord.Color.blue()
 
-                if 28 < temp:
-                    color = discord.Color.red()
-                elif 24 < temp <= 28:
-                    color = discord.Color.orange()
-                elif 20 < temp <= 24:
-                    color = discord.Color.yellow()
-                elif 15 < temp <= 20:
-                    color = discord.Color.dark_blue()
-                else:
-                    color = discord.Color.blue
+                    embed = discord.Embed(
+                        title=f"☁️ Clima em {nome}",
+                        color=color
+                    )
+                    embed.add_field(name="🌡 Temperatura", value=f"{round(temp)}°C", inline=True)
+                    embed.add_field(name="🤒 Sensação", value=f"{round(sensacao)}°C", inline=True)
+                    embed.add_field(name="💧 Umidade", value=f"{umidade}%", inline=True)
+                    embed.add_field(name="📋 Condição", value=clima, inline=False)
 
-                embed = discord.Embed(
-                    title=f"☁️ Clima em {nome}",
-                    color = color
-                )
-                embed.add_field(name="Temperatura", value=f"{round(temp)}°C", inline=True)
-                embed.add_field(name="Sensação", value=f"{round(sensacao)}°C", inline=True)
-                embed.add_field(name="Umidade", value=f"{umidade}%", inline=True)
-                embed.add_field(name="Condição", value=clima, inline=False)
+                    await ctx.send(embed=embed)
 
-                await ctx.send(embed=embed)
+        except Exception as e:
+            await ctx.send(f"Erro: `{type(e).__name__}` — {e}")
 
 async def setup(bot):
     await bot.add_cog(Commands(bot))

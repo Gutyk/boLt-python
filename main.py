@@ -18,12 +18,17 @@ intents = discord.Intents.all()
 # Bot class with setup_hook
 class MyBot(commands.Bot):
     async def setup_hook(self):
+        self.tree.clear_commands(guild=None)
+
+        # Load cogs
         await self.load_extension('cogs.commands')
         await self.load_extension('cogs.tasks')
+        await self.load_extension('cogs.levelsys')
+        await self.load_extension("cogs.slash")
+        await self.tree.sync()
         #await self.load_extension('cogs.scheduler')
         
         print("[+] All specified cogs successfully loaded.")
-        await self.load_extension('cogs.levelsys')
         print("[+] Cogs successfully loaded.")
 
 # Bot instance
@@ -32,7 +37,7 @@ bot = MyBot(command_prefix='!', intents=intents)
 # Evento principal
 @bot.event
 async def on_ready():
-    print(f'🤖 Bot is online as {bot.user}')
+    print(f'[+] Bot is online as {bot.user}')
 
 # Run the bot
 bot.run(token, log_handler=handler, log_level=logging.DEBUG)
