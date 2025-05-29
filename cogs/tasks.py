@@ -1,38 +1,23 @@
 import discord
 from discord.ext import commands
-#rom db import tasksdb
-from dotenv import load_dotenv
-import os
+from db.tasksdb import TasksDB  # Importa apenas a classe do banco
+from db.task_model import Task   # Importa o modelo de forma absoluta
 
 class Tasks(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        load_dotenv()
-        self.channel_id = os.environ.get('CHANNEL_ID')
 
     @commands.command(name="addtask")
-    async def add_task(self, ctx, *, task: str):
-        #tasksdb.add_task(ctx.author.id, task)
-        await ctx.send(f"✅ Tarefa adicionada: **{task}**")
+    async def add_task(self, ctx, *, args: str):
+        try: 
+            title, description = [x.strip() for x in args.split(" | ", 1)]
+        except ValueError:
+            await ctx.send("⚠️ Formato inválido. Use: `!addtask Título | Descrição`")
+            return
 
-    # @commands.command(name="tasks")
-    # async def list_tasks(self, ctx):
-    #     tasks = tasksdb.get_pending_tasks(ctx.author.id)
-    #     if tasks:
-    #         description = "\n".join([f"{idx+1}. {t['task']}" for idx, t in enumerate(tasks)])
-    #         embed = discord.Embed(title="📋 Tarefas Pendentes", description=description, color=discord.Color.green())
-    #         await ctx.send(embed=embed)
-    #     else:
-    #         await ctx.send("🎉 Você não tem tarefas pendentes!")
-
-    # @commands.command(name="donetask")
-    # async def done_task(self, ctx, task_number: int):
-    #     tasks = tasksdb.get_pending_tasks(ctx.author.id)
-    #     if 0 < task_number <= len(tasks):
-    #         tasksdb.complete_task(ctx.author.id, task_number - 1)
-    #         await ctx.send(f"✅ Tarefa concluída: **{tasks[task_number - 1]['task']}**")
-    #     else:
-    #         await ctx.send("⚠️ Número inválido de tarefa.")
+        task = Task(user_id=ctx.author.id, title=title, description=description, completed=False)
+        await TasksDB.insert_task(task)
+        await ctx.send(f"✅ Tarefa adicionada: **{title}**\nDescrição: {description}")
 
 async def setup(bot):
     await bot.add_cog(Tasks(bot))

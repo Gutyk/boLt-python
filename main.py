@@ -2,9 +2,10 @@ import discord
 from discord.ext import commands
 import logging
 from dotenv import load_dotenv
+from db.tasksdb import TasksDB
 import os
 
-# Load the token from .env file
+
 load_dotenv()
 token = os.environ.get('DISCORD_TOKEN')
 
@@ -15,24 +16,23 @@ logging.basicConfig(level=logging.DEBUG, handlers=[handler])
 # Intents
 intents = discord.Intents.all()
 
-# Bot class with setup_hook
+
 class MyBot(commands.Bot):
     async def setup_hook(self):
+        await TasksDB.init_db()
         await self.load_extension('cogs.commands')
         await self.load_extension('cogs.tasks')
+        await self.load_extension('cogs.levelsys')
         #await self.load_extension('cogs.scheduler')
         
         print("[+] All specified cogs successfully loaded.")
-        await self.load_extension('cogs.levelsys')
-        print("[+] Cogs successfully loaded.")
+        print("[+] Bot is ready to receive commands.")
 
-# Bot instance
+
 bot = MyBot(command_prefix='!', intents=intents)
 
-# Evento principal
 @bot.event
 async def on_ready():
     print(f'🤖 Bot is online as {bot.user}')
 
-# Run the bot
 bot.run(token, log_handler=handler, log_level=logging.DEBUG)

@@ -4,7 +4,18 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-cluster = MongoClient(os.environ.get("MONGO_URI"))
+MONGO_USER = os.environ.get("MONGO_USER")
+MONGO_PASS = os.environ.get("MONGO_PASS")
+MONGO_CLUSTER = os.environ.get("MONGO_CLUSTER")
+MONGO_APP = os.environ.get("MONGO_APP")
+
+MONGO_URI = (
+    f"mongodb+srv://{MONGO_USER}:{MONGO_PASS}@{MONGO_CLUSTER}.mongodb.net/"
+    f"?retryWrites=true&w=majority&appName={MONGO_APP}"
+)
+
+
+cluster = MongoClient(os.environ.get(MONGO_URI))
 db = cluster["discord"]
 collection = db["levelling"]
 
